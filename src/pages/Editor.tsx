@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { EditorRoot, EditorContent, type JSONContent } from "novel";
+import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -16,10 +16,10 @@ import {
   Edit3
 } from "lucide-react";
 
-const Editor = () => {
+const EditorPage = () => {
   const { sessionId } = useParams<{ sessionId: string }>();
   const navigate = useNavigate();
-  const [content, setContent] = useState<JSONContent | undefined>();
+  const [content, setContent] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [viewCount, setViewCount] = useState(1);
@@ -32,7 +32,7 @@ const Editor = () => {
       
       if (savedContent) {
         try {
-          setContent(JSON.parse(savedContent));
+          setContent(savedContent);
         } catch (error) {
           console.error("Error parsing saved content:", error);
         }
@@ -52,10 +52,10 @@ const Editor = () => {
     loadSession();
   }, [sessionId]);
 
-  const handleContentChange = (newContent: JSONContent) => {
+  const handleContentChange = (newContent: string) => {
     setContent(newContent);
     // Auto-save
-    localStorage.setItem(`session-${sessionId}`, JSON.stringify(newContent));
+    localStorage.setItem(`session-${sessionId}`, newContent);
     setLastSaved(new Date());
   };
 
@@ -78,7 +78,7 @@ const Editor = () => {
 
   const saveManually = () => {
     if (content) {
-      localStorage.setItem(`session-${sessionId}`, JSON.stringify(content));
+      localStorage.setItem(`session-${sessionId}`, content);
       setLastSaved(new Date());
       toast({
         title: "Guardado",
@@ -184,25 +184,21 @@ const Editor = () => {
       {/* Editor */}
       <div className="container mx-auto px-4 pb-8">
         <Card className="shadow-lg">
-          <EditorRoot>
-            <EditorContent
-              initialContent={content}
-              onUpdate={({ editor }) => {
-                const newContent = editor.getJSON();
-                handleContentChange(newContent);
-              }}
-              className="p-6 min-h-[600px]"
-              editorProps={{
-                attributes: {
-                  class: 'prose prose-lg dark:prose-invert prose-headings:font-title font-default focus:outline-none max-w-full',
-                },
-              }}
+          <div className="p-6 min-h-[600px]">
+            <Textarea
+              value={content}
+              onChange={(e) => handleContentChange(e.target.value)}
+              placeholder="Escribe tu contenido aquí... (Implementación temporal mientras resolvemos Novel.sh)"
+              className="min-h-[500px] resize-none border-0 focus-visible:ring-0 text-base"
             />
-          </EditorRoot>
+            <div className="mt-4 text-xs text-muted-foreground">
+              ⚠️ Editor temporal - Estamos resolviendo la integración con Novel.sh
+            </div>
+          </div>
         </Card>
       </div>
     </div>
   );
 };
 
-export default Editor;
+export default EditorPage;
